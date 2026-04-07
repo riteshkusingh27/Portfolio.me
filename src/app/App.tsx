@@ -23,9 +23,9 @@ export default function App() {
       title: 'portfolio.txt - Notepad',
       icon: '📄',
       isMinimized: false,
-      isMaximized: false,
+      isMaximized: true,
       zIndex: 1,
-      position: { x: 200, y: 100 }
+      position: { x: 0, y: 0 }
     }
   ]);
   const [terminalHistory, setTerminalHistory] = useState<string[]>([
@@ -41,13 +41,24 @@ export default function App() {
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showStartMenu, setShowStartMenu] = useState(false);
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
+  const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
 
-  // Update time every minute
+  // Update time every minute and handle resize
   useState(() => {
     const interval = setInterval(() => {
       setCurrentTime(new Date());
     }, 60000); // Update every minute
-    return () => clearInterval(interval);
+    
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('resize', handleResize);
+    };
   });
 
   // Format time in IST
@@ -87,6 +98,36 @@ export default function App() {
 
   const handleMouseUp = () => {
     setDraggingWindow(null);
+  };
+
+  // Touch handlers for mobile
+  const handleTouchStart = (e: React.TouchEvent, windowId: string) => {
+    const target = e.target as HTMLElement;
+    if (target.closest('.drag-handle')) {
+      const win = windows.find(w => w.id === windowId);
+      if (win && !win.isMaximized) {
+        setTouchStart({
+          x: e.touches[0].clientX - win.position.x,
+          y: e.touches[0].clientY - win.position.y
+        });
+        setDraggingWindow(windowId);
+      }
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (draggingWindow && touchStart) {
+      setWindows(windows.map(w =>
+        w.id === draggingWindow
+          ? { ...w, position: { x: e.touches[0].clientX - touchStart.x, y: e.touches[0].clientY - touchStart.y } }
+          : w
+      ));
+    }
+  };
+
+  const handleTouchEnd = () => {
+    setDraggingWindow(null);
+    setTouchStart(null);
   };
 
   const projects = [
@@ -235,7 +276,7 @@ export default function App() {
           '  projects  - View all projects',
           '  skills    - Show technical skills',
           '  hire      - Contact information',
-          '  about     - About Ritesh',
+          '  about     - About RITESH',
           '  clear     - Clear terminal',
           ''
         );
@@ -298,7 +339,7 @@ export default function App() {
               <button className="hover:bg-[#0000AA] hover:text-white px-2" onClick={() => scrollToSection('about')}>Edit</button>
               <button className="hover:bg-[#0000AA] hover:text-white px-2" onClick={() => scrollToSection('contact')}>Help</button>
             </div>
-            <div className="p-6 text-black overflow-y-auto h-[500px]" style={{ fontFamily: 'Courier New, monospace' }}>
+            <div className="p-6 text-black overflow-y-auto md:h-[500px] h-[calc(100vh-120px)]" style={{ fontFamily: 'Courier New, monospace' }}>
               <section id="hero" className="mb-8">
                 <pre className="text-sm leading-relaxed whitespace-pre-wrap">
 {`╔═══════════════════════════════════════════════════════════════════╗
@@ -348,7 +389,7 @@ STATISTICS:
 ABOUT ME
 ═══════════════════════════════════════════════════════════════════
 
-I'm Ritesh, a passionate Java Backend Developer with expertise in 
+I'm RITESH, a passionate Java Backend Developer with expertise in 
 building scalable, high-performance web applications. 
 
 Strong foundation in DSA with 200+ LeetCode problems solved.
@@ -366,7 +407,7 @@ Real-world production experience with freelance projects.
 CONTACT
 ═══════════════════════════════════════════════════════════════════
 
-Name: Ritesh
+Name: RITESH
 Role: Java Backend Developer | Full-Stack Developer
 
 EMAIL: `}
@@ -378,7 +419,7 @@ EMAIL: `}
                 <pre className="text-sm leading-relaxed whitespace-pre-wrap inline">{`
 PHONE: +91 98765 43210
 
-© 2026 Ritesh. All rights reserved.`}
+© 2026 RITESH. All rights reserved.`}
                 </pre>
               </section>
             </div>
@@ -392,7 +433,7 @@ PHONE: +91 98765 43210
 
       case 'terminal':
         return (
-          <div className="bg-black p-4 h-[500px] overflow-y-auto font-mono text-sm" style={{ fontFamily: 'Courier New, monospace' }}>
+          <div className="bg-black p-4 md:h-[500px] h-[calc(100vh-120px)] overflow-y-auto font-mono text-sm" style={{ fontFamily: 'Courier New, monospace' }}>
             <div className="text-green-400">
               {terminalHistory.map((line, i) => (
                 <div key={i}>{line}</div>
@@ -419,7 +460,7 @@ PHONE: +91 98765 43210
 
       case 'projects':
         return (
-          <div className="bg-white p-6 h-[500px] overflow-y-auto">
+          <div className="bg-white p-6 md:h-[500px] h-[calc(100vh-120px)] overflow-y-auto">
             <div className="grid grid-cols-2 gap-4">
               {projects.map(project => (
                 <button
@@ -439,7 +480,7 @@ PHONE: +91 98765 43210
       case 'project-detail':
         const project = window.data;
         return (
-          <div className="bg-white p-6 h-[500px] overflow-y-auto" style={{ fontFamily: 'Courier New, monospace' }}>
+          <div className="bg-white p-6 md:h-[500px] h-[calc(100vh-120px)] overflow-y-auto" style={{ fontFamily: 'Courier New, monospace' }}>
             <div className="text-center mb-6">
               <div className="text-6xl mb-4">{project.icon}</div>
               <h2 className="text-2xl font-bold mb-2">{project.name}</h2>
@@ -497,7 +538,7 @@ PHONE: +91 98765 43210
             <div className="bg-[#F0F0F0] border-b border-[#808080] px-2 py-1 text-sm select-none font-bold">
               System Information
             </div>
-            <div className="bg-white p-6 h-[500px] overflow-y-auto" style={{ fontFamily: 'Courier New, monospace' }}>
+            <div className="bg-white p-6 md:h-[500px] h-[calc(100vh-120px)] overflow-y-auto" style={{ fontFamily: 'Courier New, monospace' }}>
               <pre className="text-sm">
 {`╔═══════════════════════════════════════╗
 ║        TECHNICAL SKILLS v1.0          ║
@@ -547,7 +588,7 @@ Last Updated: April 2026`}
               <button className="hover:bg-[#0000AA] hover:text-white px-2">File</button>
               <button className="hover:bg-[#0000AA] hover:text-white px-2">Edit</button>
             </div>
-            <div className="p-6 text-black overflow-y-auto h-[500px]" style={{ fontFamily: 'Courier New, monospace' }}>
+            <div className="p-6 text-black overflow-y-auto md:h-[500px] h-[calc(100vh-120px)]" style={{ fontFamily: 'Courier New, monospace' }}>
               <pre className="text-sm leading-relaxed whitespace-pre-wrap">
 {`╔═══════════════════════════════════════════════════════════════════╗
 ║                      WHY HIRE ME?                                 ║
@@ -620,19 +661,19 @@ Let's connect!`}
   return (
     <div className="bg-[#1a1a2e] min-h-screen font-mono select-text relative overflow-hidden">
       {/* Background Text */}
-      <div className="fixed inset-0 flex items-center justify-center pointer-events-none select-none z-0 pr-32">
+      <div className={`fixed inset-0 flex items-center justify-center pointer-events-none select-none z-0 ${isMobile ? 'pr-4' : 'pr-32'}`}>
         <div className="text-center">
-          <h1 className="text-6xl font-black mb-4 text-yellow-400 opacity-20" style={{ 
+          <h1 className={`${isMobile ? 'text-3xl' : 'text-6xl'} font-black mb-4 text-yellow-400 opacity-20`} style={{ 
             fontFamily: 'Orbitron, sans-serif', 
-            letterSpacing: '0.15em',
+            letterSpacing: isMobile ? '0.05em' : '0.15em',
             fontWeight: 900,
             textShadow: '0 0 30px rgba(255, 215, 0, 0.3)'
           }}>
             RITESH KUMAR SINGH
           </h1>
-          <p className="text-xl font-bold text-yellow-300 opacity-25" style={{ 
-            fontFamily: ' sans-serif', 
-            letterSpacing: '0.3em',
+          <p className={`${isMobile ? 'text-sm' : 'text-xl'} font-bold text-yellow-300 opacity-25`} style={{ 
+            fontFamily: 'Orbitron, sans-serif', 
+            letterSpacing: isMobile ? '0.15em' : '0.3em',
             fontWeight: 700,
             textShadow: '0 0 20px rgba(255, 215, 0, 0.2)'
           }}>
@@ -644,50 +685,55 @@ Let's connect!`}
       <div className="min-h-screen p-4 pb-12 relative z-10">
         
         {/* Desktop Icons */}
-        <div className="grid gap-4 w-24">
+        <div className={`${isMobile ? 'flex flex-wrap gap-3 justify-start mb-4' : 'grid gap-4 w-24'}`}>
           <button
+            onClick={() => openWindow('portfolio', 'portfolio.txt - Notepad', '📄')}
             onDoubleClick={() => openWindow('portfolio', 'portfolio.txt - Notepad', '📄')}
-            className="flex flex-col items-center gap-1 p-2 hover:bg-[#0000AA]/20 border-2 border-transparent focus:border-dotted focus:border-white"
+            className={`flex flex-col items-center gap-1 p-2 hover:bg-[#0000AA]/20 border-2 border-transparent focus:border-dotted focus:border-white active:bg-[#0000AA]/40 transition-all duration-100 ${isMobile ? 'w-16 md:w-24' : ''}`}
           >
-            <div className="text-4xl">📄</div>
-            <span className="text-white text-xs text-center drop-shadow-[1px_1px_0_rgba(0,0,0,1)]">portfolio.txt</span>
+            <div className={`transition-transform duration-100 active:scale-90 ${isMobile ? 'text-2xl md:text-4xl' : 'text-4xl'}`}>📄</div>
+            <span className={`text-white text-center drop-shadow-[1px_1px_0_rgba(0,0,0,1)] ${isMobile ? 'text-[10px] md:text-xs' : 'text-xs'}`}>portfolio.txt</span>
           </button>
 
           <button
+            onClick={() => openWindow('projects', 'Projects', '📁')}
             onDoubleClick={() => openWindow('projects', 'Projects', '📁')}
-            className="flex flex-col items-center gap-1 p-2 hover:bg-[#0000AA]/20 border-2 border-transparent focus:border-dotted focus:border-white"
+            className={`flex flex-col items-center gap-1 p-2 hover:bg-[#0000AA]/20 border-2 border-transparent focus:border-dotted focus:border-white active:bg-[#0000AA]/40 transition-all duration-100 ${isMobile ? 'w-16 md:w-24' : ''}`}
           >
-            <div className="text-4xl">📁</div>
-            <span className="text-white text-xs text-center drop-shadow-[1px_1px_0_rgba(0,0,0,1)]">Projects</span>
+            <div className={`transition-transform duration-100 active:scale-90 ${isMobile ? 'text-2xl md:text-4xl' : 'text-4xl'}`}>📁</div>
+            <span className={`text-white text-center drop-shadow-[1px_1px_0_rgba(0,0,0,1)] ${isMobile ? 'text-[10px] md:text-xs' : 'text-xs'}`}>Projects</span>
           </button>
 
           <button
+            onClick={() => openWindow('skills', 'Skills.exe', '🧠')}
             onDoubleClick={() => openWindow('skills', 'Skills.exe', '🧠')}
-            className="flex flex-col items-center gap-1 p-2 hover:bg-[#0000AA]/20 border-2 border-transparent focus:border-dotted focus:border-white"
+            className={`flex flex-col items-center gap-1 p-2 hover:bg-[#0000AA]/20 border-2 border-transparent focus:border-dotted focus:border-white active:bg-[#0000AA]/40 transition-all duration-100 ${isMobile ? 'w-16 md:w-24' : ''}`}
           >
-            <div className="text-4xl">🧠</div>
-            <span className="text-white text-xs text-center drop-shadow-[1px_1px_0_rgba(0,0,0,1)]">Skills.exe</span>
+            <div className={`transition-transform duration-100 active:scale-90 ${isMobile ? 'text-2xl md:text-4xl' : 'text-4xl'}`}>🧠</div>
+            <span className={`text-white text-center drop-shadow-[1px_1px_0_rgba(0,0,0,1)] ${isMobile ? 'text-[10px] md:text-xs' : 'text-xs'}`}>Skills.exe</span>
           </button>
 
           <button
+            onClick={() => openWindow('hireme', 'HireMe.txt - Notepad', '💼')}
             onDoubleClick={() => openWindow('hireme', 'HireMe.txt - Notepad', '💼')}
-            className="flex flex-col items-center gap-1 p-2 hover:bg-[#0000AA]/20 border-2 border-transparent focus:border-dotted focus:border-white"
+            className={`flex flex-col items-center gap-1 p-2 hover:bg-[#0000AA]/20 border-2 border-transparent focus:border-dotted focus:border-white active:bg-[#0000AA]/40 transition-all duration-100 ${isMobile ? 'w-16 md:w-24' : ''}`}
           >
-            <div className="text-4xl">💼</div>
-            <span className="text-white text-xs text-center drop-shadow-[1px_1px_0_rgba(0,0,0,1)]">HireMe.txt</span>
+            <div className={`transition-transform duration-100 active:scale-90 ${isMobile ? 'text-2xl md:text-4xl' : 'text-4xl'}`}>💼</div>
+            <span className={`text-white text-center drop-shadow-[1px_1px_0_rgba(0,0,0,1)] ${isMobile ? 'text-[10px] md:text-xs' : 'text-xs'}`}>HireMe.txt</span>
           </button>
 
           <button
+            onClick={() => openWindow('terminal', 'Terminal', '🖥️')}
             onDoubleClick={() => openWindow('terminal', 'Terminal', '🖥️')}
-            className="flex flex-col items-center gap-1 p-2 hover:bg-[#0000AA]/20 border-2 border-transparent focus:border-dotted focus:border-white"
+            className={`flex flex-col items-center gap-1 p-2 hover:bg-[#0000AA]/20 border-2 border-transparent focus:border-dotted focus:border-white active:bg-[#0000AA]/40 transition-all duration-100 ${isMobile ? 'w-16 md:w-24' : ''}`}
           >
-            <div className="text-4xl">🖥️</div>
-            <span className="text-white text-xs text-center drop-shadow-[1px_1px_0_rgba(0,0,0,1)]">Terminal.exe</span>
+            <div className={`transition-transform duration-100 active:scale-90 ${isMobile ? 'text-2xl md:text-4xl' : 'text-4xl'}`}>🖥️</div>
+            <span className={`text-white text-center drop-shadow-[1px_1px_0_rgba(0,0,0,1)] ${isMobile ? 'text-[10px] md:text-xs' : 'text-xs'}`}>Terminal.exe</span>
           </button>
 
-          <button className="flex flex-col items-center gap-1 p-2 hover:bg-[#0000AA]/20 border-2 border-transparent focus:border-dotted focus:border-white">
-            <div className="text-4xl">🗑️</div>
-            <span className="text-white text-xs text-center drop-shadow-[1px_1px_0_rgba(0,0,0,1)]">Recycle Bin</span>
+          <button className={`flex flex-col items-center gap-1 p-2 hover:bg-[#0000AA]/20 border-2 border-transparent focus:border-dotted focus:border-white active:bg-[#0000AA]/40 transition-all duration-100 ${isMobile ? 'w-16 md:w-24' : ''}`}>
+            <div className={`transition-transform duration-100 active:scale-90 ${isMobile ? 'text-2xl md:text-4xl' : 'text-4xl'}`}>🗑️</div>
+            <span className={`text-white text-center drop-shadow-[1px_1px_0_rgba(0,0,0,1)] ${isMobile ? 'text-[10px] md:text-xs' : 'text-xs'}`}>Recycle Bin</span>
           </button>
         </div>
 
@@ -699,7 +745,7 @@ Let's connect!`}
               className={`bg-white border-2 border-t-white border-l-white border-r-[#808080] border-b-[#808080] shadow-[2px_2px_0_0_rgba(0,0,0,0.2)] ${
                 window.isMaximized 
                   ? 'fixed top-0 left-0 right-0 bottom-10 m-0' 
-                  : 'absolute w-[800px] max-w-[90vw]'
+                  : isMobile ? 'fixed inset-0 m-4 rounded' : 'absolute w-[800px] max-w-[90vw]'
               }`}
               style={{
                 zIndex: window.zIndex,
@@ -710,6 +756,9 @@ Let's connect!`}
               onMouseDown={(e) => handleMouseDown(e, window.id)}
               onMouseMove={handleMouseMove}
               onMouseUp={handleMouseUp}
+              onTouchStart={(e) => handleTouchStart(e, window.id)}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
             >
               {/* Title Bar */}
               <div className="bg-gradient-to-r from-[#0000AA] to-[#1084D0] px-2 py-1 flex items-center justify-between select-none cursor-move drag-handle">
@@ -757,17 +806,17 @@ Let's connect!`}
         ))}
 
         {/* Taskbar */}
-        <div className="fixed bottom-0 left-0 right-0 bg-[#C0C0C0] border-t-2 border-t-white border-b-[#808080] px-2 py-1 flex items-center gap-2 select-none z-50">
+        <div className={`fixed bottom-0 left-0 right-0 bg-[#C0C0C0] border-t-2 border-t-white border-b-[#808080] ${isMobile ? 'px-1 py-2' : 'px-2 py-1'} flex items-center gap-2 select-none z-50`}>
           <div className="relative">
             <button
-              className="bg-[#008080] hover:bg-[#009090] border-2 border-t-white border-l-white border-r-[#000] border-b-[#000] px-4 py-1 flex items-center gap-2 text-white font-bold text-sm active:border-t-[#000] active:border-l-[#000] active:border-r-white active:border-b-white"
+              className={`bg-[#008080] hover:bg-[#009090] border-2 border-t-white border-l-white border-r-[#000] border-b-[#000] ${isMobile ? 'px-2 py-1 text-xs' : 'px-4 py-1 text-sm'} flex items-center gap-2 text-white font-bold active:border-t-[#000] active:border-l-[#000] active:border-r-white active:border-b-white`}
               onClick={() => setShowStartMenu(!showStartMenu)}
             >
               <span className="text-base">🪟</span>
-              <span>Start</span>
+              <span className={isMobile ? 'hidden sm:inline' : ''}>Start</span>
             </button>
             {showStartMenu && (
-              <div className="absolute left-0 bottom-full mb-1 w-64 bg-[#C0C0C0] border-2 border-t-white border-l-white border-r-[#808080] border-b-[#808080] shadow-[2px_2px_0_0_rgba(0,0,0,0.2)]">
+              <div className={`absolute ${isMobile ? 'w-screen sm:w-64 left-0 sm:left-auto sm:bottom-full' : 'w-64 left-0 bottom-full'} mb-1 bg-[#C0C0C0] border-2 border-t-white border-l-white border-r-[#808080] border-b-[#808080] shadow-[2px_2px_0_0_rgba(0,0,0,0.2)] z-50 max-h-96 overflow-y-auto`}>
                 {/* Start Menu Sidebar */}
                 <div className="flex">
                   <div className="bg-gradient-to-b from-[#0000AA] to-[#1084D0] w-8 flex items-end py-2">
@@ -866,7 +915,7 @@ Let's connect!`}
               </div>
             )}
           </div>
-          <div className="flex-1 bg-[#808080] h-8 border-2 border-t-[#000] border-l-[#000] border-r-white border-b-white px-2 py-1 flex items-center gap-2 overflow-x-auto">
+          <div className={`flex-1 bg-[#808080] ${isMobile ? 'h-6' : 'h-8'} border-2 border-t-[#000] border-l-[#000] border-r-white border-b-white px-2 py-1 flex items-center gap-2 overflow-x-auto`}>
             {windows.map(window => (
               <button
                 key={window.id}
@@ -876,16 +925,16 @@ Let's connect!`}
                   }
                   focusWindow(window.id);
                 }}
-                className={`${!window.isMinimized ? 'bg-[#C0C0C0]' : 'bg-transparent'} border border-[#808080] px-3 py-1 flex items-center gap-2 text-xs hover:bg-[#C0C0C0] transition-colors whitespace-nowrap`}
+                className={`${!window.isMinimized ? 'bg-[#C0C0C0]' : 'bg-transparent'} border border-[#808080] ${isMobile ? 'px-2 py-0 text-xs' : 'px-3 py-1 text-xs'} flex items-center gap-1 hover:bg-[#C0C0C0] transition-colors whitespace-nowrap`}
               >
                 <span>{window.icon}</span>
                 <span>{window.title}</span>
               </button>
             ))}
           </div>
-          <div className="border-2 border-t-[#808080] border-l-[#808080] border-r-white border-b-white px-3 py-1 text-xs flex items-center gap-2">
+          <div className={`border-2 border-t-[#808080] border-l-[#808080] border-r-white border-b-white ${isMobile ? 'px-2 py-0' : 'px-3 py-1'} text-xs flex items-center gap-1`}>
             <span>🔊</span>
-            <span>{formatTime()}</span>
+            <span className={isMobile ? 'hidden md:inline' : ''}>{formatTime()}</span>
           </div>
         </div>
       </div>
