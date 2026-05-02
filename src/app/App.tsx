@@ -12,22 +12,31 @@ interface Window {
   isMaximized: boolean;
   zIndex: number;
   position: { x: number; y: number };
+  size?: { width: number; height?: number };
   data?: any;
 }
 
 export default function App() {
-  const [windows, setWindows] = useState<Window[]>([
-    {
-      id: 'portfolio',
-      type: 'portfolio',
-      title: 'portfolio.txt - Notepad',
-      icon: '📄',
-      isMinimized: false,
-      isMaximized: true,
-      zIndex: 1,
-      position: { x: 0, y: 0 }
-    }
-  ]);
+  const [windows, setWindows] = useState<Window[]>(() => {
+    const initialWidth = 640;
+    const defaultX = typeof window !== 'undefined'
+      ? Math.max(16, window.innerWidth - initialWidth - 32)
+      : 0;
+
+    return [
+      {
+        id: 'portfolio',
+        type: 'portfolio',
+        title: 'portfolio.txt - Notepad',
+        icon: '📄',
+        isMinimized: false,
+        isMaximized: false,
+        zIndex: 1,
+        position: { x: defaultX, y: 80 },
+        size: { width: initialWidth }
+      }
+    ];
+  });
   const [terminalHistory, setTerminalHistory] = useState<string[]>([
     'Microsoft Windows 98 [Version 4.10.1998]',
     '(C) Copyright Microsoft Corp 1981-1998.',
@@ -147,7 +156,7 @@ export default function App() {
       tech: ['Spring Boot', 'React', 'MySQL', 'JWT', 'AWS S3'],
       impact: 'Secure payment integration & real-time order tracking',
       liveLink: 'https://cravecartjun.netlify.app/',
-      githubLink: 'https://github.com/riteshkumarsingh/crave-cart',
+      githubLink: 'https://github.com/riteshkusingh27/crave-cart',
     },
     {
       id: 'ordersystem',
@@ -164,7 +173,7 @@ export default function App() {
   • Implemented Zipkin for distributed tracing and performance monitoring`,
       tech: ['Microservices', 'Kafka', 'Resilience4j', 'Zipkin', 'Docker'],
       impact: 'High-performance distributed system with 99.9% uptime',
-      githubLink: 'https://github.com/riteshkumarsingh/order-management-system',
+      githubLink: 'https://github.com/riteshkusingh27/order-management-system',
     },
     {
       id: 'aimail',
@@ -182,7 +191,7 @@ export default function App() {
       tech: ['React', 'OpenAI API', 'Chrome Extension API', 'TypeScript'],
       impact: '10x faster email response time with AI-powered suggestions',
       liveLink: 'https://addons.mozilla.org/en-US/firefox/addon/ai-mail-replier/',
-      githubLink: 'https://github.com/riteshkumarsingh/ai-mail-replier',
+      githubLink: 'https://github.com/riteshkusingh27/ai-mail-replier',
     },
     {
       id: 'blogr',
@@ -200,7 +209,7 @@ export default function App() {
       tech: ['MERN', 'Gemini API', 'TailwindCSS'],
       impact: 'AI-powered content generation for seamless blog creation',
       liveLink: 'https://blogr-frontend-chi.vercel.app/',
-      githubLink: 'https://github.com/riteshkumarsingh/blogr',
+      githubLink: 'https://github.com/riteshkusingh27/blogr',
     },
     {
       id: 'gamingcafe',
@@ -218,7 +227,7 @@ export default function App() {
       tech: ['Spring Boot', 'React', 'MySQL', 'JWT Auth'],
       impact: 'Streamlined operations for 50+ daily customers',
       liveLink: 'https://dsdpremiumgaming.com/',
-      githubLink: 'https://github.com/riteshkumarsingh/gaming-cafe-management',
+      githubLink: 'https://github.com/riteshkusingh27/gaming-cafe-management',
     },
   ];
 
@@ -751,6 +760,8 @@ Let's connect!`}
                 zIndex: window.zIndex,
                 top: window.isMaximized ? 0 : `${window.position.y}px`,
                 left: window.isMaximized ? 0 : `${window.position.x}px`,
+                width: !window.isMaximized && !isMobile && window.size?.width ? `${window.size.width}px` : undefined,
+                height: !window.isMaximized && !isMobile && window.size?.height ? `${window.size.height}px` : undefined,
               }}
               onClick={() => focusWindow(window.id)}
               onMouseDown={(e) => handleMouseDown(e, window.id)}
@@ -881,7 +892,7 @@ Let's connect!`}
                     
                     {/* Profile Links */}
                     <a
-                      href="https://github.com/riteshkumarsingh"
+                      href="https://github.com/riteshkusingh27"
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={() => setShowStartMenu(false)}
@@ -891,7 +902,7 @@ Let's connect!`}
                       <span>GitHub</span>
                     </a>
                     <a
-                      href="https://leetcode.com/riteshkumarsingh"
+                      href="https://leetcode.com/u/ritttxr256/"
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={() => setShowStartMenu(false)}
@@ -901,7 +912,7 @@ Let's connect!`}
                       <span>LeetCode</span>
                     </a>
                     <a
-                      href="https://linkedin.com/in/riteshkumarsingh"
+                      href="https://www.linkedin.com/in/riteshkusingh/"
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={() => setShowStartMenu(false)}
